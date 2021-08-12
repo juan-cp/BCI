@@ -86,7 +86,7 @@
         return Math.round(100*(100*c2[c2.length-1]/c2[index_fecha_EOPY]-100))/100;    
     }
     function retorno_ex(datos){
-        var ventana_dias=30
+        var ventana_dias=7
         var c2=datos.map(function(value,index) { return value[1]; });
         return Math.round(100*(100*c2[c2.length-1]/c2[c2.length-ventana_dias-1]-100))/100; 
 
@@ -98,7 +98,7 @@
         });
  
         // Hoja que se va a procesar
-        var firstSheet = workbook.SheetNames[3];
+        var firstSheet = workbook.SheetNames[2];
  
         //Filas a objeto JSON
         var x = XLSX.utils.sheet_to_json(workbook.Sheets[firstSheet],{dateNF:'dd-mm-yyyy;@',cellDates:true, raw: true});
