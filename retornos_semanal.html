@@ -123,7 +123,7 @@
         var y4=[];
 
         y1.push(['', 'YTD', {type: 'string', role: 'annotation'},
-         'Mensual', {type: 'string', role: 'annotation'}])
+         'Semanal', {type: 'string', role: 'annotation'}])
         for (var i=1;i< 21;i++){
             y1.push([fields[i], 
                     retorno_YTD(obtener_datos_y_fecha(x,fields[i])),
@@ -136,7 +136,7 @@
         drawAnnotations(y1,'chart_div2','Retorno Índices Accionarios')
 
             y2.push(['', 'YTD', {type: 'string', role: 'annotation'},
-         'Mensual', {type: 'string', role: 'annotation'}])
+         'Semanal', {type: 'string', role: 'annotation'}])
         for (var i=21;i< 21+9;i++){
             y2.push([fields[i], 
                     retorno_YTD(obtener_datos_y_fecha(x,fields[i])),
@@ -148,7 +148,7 @@
         };
         drawAnnotations(y2,'chart_div3','Retorno Índices Deuda')
               y3.push(['', 'YTD', {type: 'string', role: 'annotation'},
-         'Mensual', {type: 'string', role: 'annotation'}])
+         'Semanal', {type: 'string', role: 'annotation'}])
         for (var i=21+9;i< 21+9+8;i++){
             y3.push([fields[i], 
                     retorno_YTD(obtener_datos_y_fecha(x,fields[i])),
@@ -161,7 +161,7 @@
         drawAnnotations(y3,'chart_div4','Retorno Monedas')
 
                y4.push(['', 'YTD', {type: 'string', role: 'annotation'},
-         'Mensual', {type: 'string', role: 'annotation'}])
+         'Semanal', {type: 'string', role: 'annotation'}])
         for (var i=21+9+8;i< 21+9+8+9;i++){
             y4.push([fields[i], 
                     retorno_YTD(obtener_datos_y_fecha(x,fields[i])),
