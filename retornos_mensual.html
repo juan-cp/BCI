@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>Gráficos Retorno</title>
+
+</style>
+</head>
+<body>
+		<input type="file" id="fileUpload" />
+<input type="button" id="upload" value="Subir" onclick="Upload()" />
+
+
+<hr />
+  <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+  <!--
+
+  <div id="chart_div" style="width:500px; height:300px"></div>
+
+    -->
+<table> 
+    <tr>
+        <td><div id="chart_div2" style="width:700px; height:900px"></div></td>
+        <td><div id="chart_div3" style="width:700px; height:900px"></div></td>
+    </tr>
+    <tr>
+        <td><div id="chart_div4" style="width:700px; height:900px"></div></td>
+        <td><div id="chart_div5" style="width:700px; height:900px"></div></td>
+    </tr>
+</table>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.13.5/xlsx.full.min.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.13.5/jszip.js"></script>
+<script type="text/javascript">
+
+    google.charts.load('current', {packages: ['corechart', 'line']});
+    google.charts.setOnLoadCallback(drawLine);
+    google.charts.load('current', {packages: ['corechart', 'bar']});
+    google.charts.setOnLoadCallback(drawAnnotations);
+
+    function Upload() {
+        //Reference the FileUpload element.
+        var fileUpload = document.getElementById("fileUpload");
+ 
+        //Validate whether File is valid Excel file.
+        var regex = /^([a-zA-Z0-9\s_\\.\-:])+(.xls|.xlsx)$/;
+        if (regex.test(fileUpload.value.toLowerCase())) {
+            if (typeof (FileReader) != "undefined") {
+                var reader = new FileReader();
+ 
+                //For Browsers other than IE.
+                if (reader.readAsBinaryString) {
+                    reader.onload = function (e) {
+                        ProcessExcel(e.target.result);
+                    };
+                    reader.readAsBinaryString(fileUpload.files[0]);
+                } else {
+                    //For IE Browser.
+                    reader.onload = function (e) {
+                        var data = "";
+                        var bytes = new Uint8Array(e.target.result);
+                        for (var i = 0; i < bytes.byteLength; i++) {
+                            data += String.fromCharCode(bytes[i]);
+                        }
+                        ProcessExcel(data);
+                    };
+                    reader.readAsArrayBuffer(fileUpload.files[0]);
+                }
+            } else {
+                alert("This browser does not support HTML5.");
+            }
+        } else {
+            alert("Please upload a valid Excel file.");
+        }
+    };
+
+    function obtener_datos_y_fecha(datos,campo){
+        var y=[];
+        for (var i=0;i< datos.length;i++){y.push([new Date(datos[i]["Dates"]),parseFloat(datos[i][campo])])};
+        return y;
+    }
+    function retorno_YTD(datos){
+        var c1=datos.map(function(value,index) { return value[0]; });
+        var c2=datos.map(function(value,index) { return value[1]; });
+        var fecha_EOPY=new Date(2020,11,31)//Fecha YTD
+        var index_fecha_EOPY = c1.findIndex(function(x) {return x.valueOf() === fecha_EOPY.valueOf();});
+        return Math.round(100*(100*c2[c2.length-1]/c2[index_fecha_EOPY]-100))/100;    
+    }
+    function retorno_ex(datos){
+        var ventana_dias=30
+        var c2=datos.map(function(value,index) { return value[1]; });
+        return Math.round(100*(100*c2[c2.length-1]/c2[c2.length-ventana_dias-1]-100))/100; 
+
+    }
+    function ProcessExcel(data) {
+        //Read the Excel File data.
+        var workbook = XLSX.read(data, {
+            type: 'binary'
+        });
+ 
+        // Hoja que se va a procesar
+        var firstSheet = workbook.SheetNames[2];
+ 
+        //Filas a objeto JSON
+        var x = XLSX.utils.sheet_to_json(workbook.Sheets[firstSheet],{dateNF:'dd-mm-yyyy;@',cellDates:true, raw: true});
+        
+        // Campos primera fila
+        var fields=Object.keys(x[0])
+
+        //CODIGO ALTERNATIVO: Para chequear indice columna
+        //var field='SPX Index'
+        //var field_index=fields.indexOf(field)
+
+        //gráfico de línea
+        //drawLine(obtener_datos_y_fecha(x,'S&P 500'),'S&P 500','chart_div')
+        //drawLine(obtener_datos_y_fecha(x,'NKY INDEX'),'NKY INDEX','chart_div2')
+        //console.log(obtener_datos_y_fecha(x,'S&P 500'))
+
+
+        //Crear array que recibirá nombre, retornos YTD y Mensual de cada indice, parte en 1 por dates
+        var y1=[];
+        var y2=[];
+        var y3=[];
+        var y4=[];
+
+        y1.push(['', 'YTD', {type: 'string', role: 'annotation'},
+         'Mensual', {type: 'string', role: 'annotation'}])
+        for (var i=1;i< 21;i++){
+            y1.push([fields[i], 
+                    retorno_YTD(obtener_datos_y_fecha(x,fields[i])),
+                    retorno_YTD(obtener_datos_y_fecha(x,fields[i])).toString()+'%',
+                    retorno_ex(obtener_datos_y_fecha(x,fields[i])),
+                    retorno_ex(obtener_datos_y_fecha(x,fields[i])).toString()+'%'
+                    ]
+                    )
+        };
+        drawAnnotations(y1,'chart_div2','Retorno Índices Accionarios')
+
+            y2.push(['', 'YTD', {type: 'string', role: 'annotation'},
+         'Mensual', {type: 'string', role: 'annotation'}])
+        for (var i=21;i< 21+9;i++){
+            y2.push([fields[i], 
+                    retorno_YTD(obtener_datos_y_fecha(x,fields[i])),
+                    retorno_YTD(obtener_datos_y_fecha(x,fields[i])).toString()+'%',
+                    retorno_ex(obtener_datos_y_fecha(x,fields[i])),
+                    retorno_ex(obtener_datos_y_fecha(x,fields[i])).toString()+'%'
+                    ]
+                    )
+        };
+        drawAnnotations(y2,'chart_div3','Retorno Índices Deuda')
+              y3.push(['', 'YTD', {type: 'string', role: 'annotation'},
+         'Mensual', {type: 'string', role: 'annotation'}])
+        for (var i=21+9;i< 21+9+8;i++){
+            y3.push([fields[i], 
+                    retorno_YTD(obtener_datos_y_fecha(x,fields[i])),
+                    retorno_YTD(obtener_datos_y_fecha(x,fields[i])).toString()+'%',
+                    retorno_ex(obtener_datos_y_fecha(x,fields[i])),
+                    retorno_ex(obtener_datos_y_fecha(x,fields[i])).toString()+'%'
+                    ]
+                    )
+        };
+        drawAnnotations(y3,'chart_div4','Retorno Monedas')
+
+               y4.push(['', 'YTD', {type: 'string', role: 'annotation'},
+         'Mensual', {type: 'string', role: 'annotation'}])
+        for (var i=21+9+8;i< 21+9+8+9;i++){
+            y4.push([fields[i], 
+                    retorno_YTD(obtener_datos_y_fecha(x,fields[i])),
+                    retorno_YTD(obtener_datos_y_fecha(x,fields[i])).toString()+'%',
+                    retorno_ex(obtener_datos_y_fecha(x,fields[i])),
+                    retorno_ex(obtener_datos_y_fecha(x,fields[i])).toString()+'%'
+                    ]
+                    )
+        };
+        drawAnnotations(y4,'chart_div5','Retorno Materias Primas')
+
+        //localStorage.setItem('pruebas',JSON.stringify(obtener_datos_y_fecha(x,'SPX Index')))
+        //var caja=document.querySelector('#dvExcel');
+        //caja.innerHTML=Object.keys(excelRows[0])[0];
+    };
+
+    function drawLine(y,f,div_obj) {
+      var data = new google.visualization.DataTable();
+      data.addColumn('date', '');
+      data.addColumn('number', f);
+      data.addRows(y);
+      var options = {
+        /**
+        hAxis: {
+          title: 'X'
+        },
+        vAxis: {
+          title: 'Y'
+        },
+        backgroundColor: '#ffffff'
+        **/
+                    };
+      var chart = new google.visualization.LineChart(document.getElementById(div_obj));
+      chart.draw(data, options);
+    }
+    function drawAnnotations(y,div_obj,titulo) {
+ 
+      var data = google.visualization.arrayToDataTable(y);
+
+      var options = {
+        title: titulo,
+        chartArea: {width: '50%'},
+        annotations: {
+          alwaysOutside: true,
+          textStyle: {
+            fontSize: 10,
+            auraColor: 'none',
+            color: '#555'
+          },
+          boxStyle: {
+            stroke: '#ccc',
+            strokeWidth: 1,
+            gradient: {
+              color1: '#f3e5f5',
+              color2: '#f3e5f5',
+              x1: '0%', y1: '0%',
+              x2: '100%', y2: '100%'
+            }
+          }
+        },
+        hAxis: {
+          //title: '',
+          //minValue: 0,
+        },
+        vAxis: {
+          //title: 'City'
+        }
+      };
+      var chart = new google.visualization.BarChart(document.getElementById(div_obj));
+      chart.draw(data, options);
+    }
+</script>
+
+
+</body>
+</html>
