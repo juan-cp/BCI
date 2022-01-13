@@ -81,7 +81,7 @@
     function retorno_YTD(datos){
         var c1=datos.map(function(value,index) { return value[0]; });
         var c2=datos.map(function(value,index) { return value[1]; });
-        var fecha_EOPY=new Date(2020,11,31)//Fecha YTD
+        var fecha_EOPY=new Date(2021,11,31)//Fecha YTD
         var index_fecha_EOPY = c1.findIndex(function(x) {return x.valueOf() === fecha_EOPY.valueOf();});
         return Math.round(100*(100*c2[c2.length-1]/c2[index_fecha_EOPY]-100))/100;    
     }
